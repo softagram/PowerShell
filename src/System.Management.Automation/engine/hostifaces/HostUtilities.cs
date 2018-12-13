@@ -23,6 +23,8 @@ namespace System.Management.Automation
         Command = 0,
         Error = 1,
         Dynamic = 2,
+
+        /// <summary>Match by fully qualified ErrorId.</summary>
         ErrorId = 3
     }
 
@@ -58,7 +60,7 @@ namespace System.Management.Automation
             $formatString -f $lastError.TargetObject,"".\$($lastError.TargetObject)""
         ";
 
-        private static string s_getFuzzyMatchedCommands = @"
+        private static string _getFuzzyMatchedCommands = @"
             [System.Diagnostics.DebuggerHidden()]
             param([string] $formatString)
 
@@ -76,11 +78,14 @@ namespace System.Management.Automation
                     ScriptBlock.CreateDelayParsedScriptBlock(s_createCommandExistsInCurrentDirectoryScript, isProductCode: true),
                     new object[] { CodeGeneration.EscapeSingleQuotedStringContent(SuggestionStrings.Suggestion_CommandExistsInCurrentDirectory) },
                     true),
-                NewSuggestion(4, "General", SuggestionMatchType.ErrorId, "CommandNotFoundException",
-                    ScriptBlock.CreateDelayParsedScriptBlock(s_getFuzzyMatchedCommands, isProductCode: true),
-                    new object[] { CodeGeneration.EscapeSingleQuotedStringContent(SuggestionStrings.Suggestion_CommandNotFound),
-                        },
-                    true)
+                NewSuggestion(
+                    id: 4,
+                    category: "General",
+                    matchType: SuggestionMatchType.ErrorId,
+                    rule: "CommandNotFoundException",
+                    suggestion: ScriptBlock.CreateDelayParsedScriptBlock(_getFuzzyMatchedCommands, isProductCode: true),
+                    suggestionArgs: new object[] { CodeGeneration.EscapeSingleQuotedStringContent(SuggestionStrings.Suggestion_CommandNotFound) },
+                    enabled: true)
             }
         );
 
@@ -527,6 +532,13 @@ namespace System.Management.Automation
         /// <summary>
         /// Create suggestion with string rule and suggestion.
         /// </summary>
+        /// <param name="id">Identifier for the suggestion.</param>
+        /// <param name="category">Category for the suggestion.</param>
+        /// <param name="matchType">Suggestion match type.</param>
+        /// <param name="rule">Rule to match.</param>
+        /// <param name="suggestion">Suggestion to return.</param>
+        /// <param name="enabled">True if the suggestion is enabled.</param>
+        /// <returns>Hashtable representing the suggestion.</returns>
         private static Hashtable NewSuggestion(int id, string category, SuggestionMatchType matchType, string rule, string suggestion, bool enabled)
         {
             Hashtable result = new Hashtable(StringComparer.CurrentCultureIgnoreCase);
@@ -544,6 +556,14 @@ namespace System.Management.Automation
         /// <summary>
         /// Create suggestion with string rule and scriptblock suggestion.
         /// </summary>
+        /// <param name="id">Identifier for the suggestion.</param>
+        /// <param name="category">Category for the suggestion.</param>
+        /// <param name="matchType">Suggestion match type.</param>
+        /// <param name="rule">Rule to match.</param>
+        /// <param name="suggestion">Scriptblock to run that returns the suggestion.</param>
+        /// <param name="suggestionArgs">Arguments to pass to suggestion scriptblock.</param>
+        /// <param name="enabled">True if the suggestion is enabled.</param>
+        /// <returns>Hashtable representing the suggestion.</returns>
         private static Hashtable NewSuggestion(int id, string category, SuggestionMatchType matchType, string rule, ScriptBlock suggestion, object[] suggestionArgs, bool enabled)
         {
             Hashtable result = new Hashtable(StringComparer.CurrentCultureIgnoreCase);

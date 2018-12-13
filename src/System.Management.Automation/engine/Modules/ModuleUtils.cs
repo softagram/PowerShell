@@ -380,15 +380,15 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Gets a list of fuzzy matching commands and their scores
+        /// Gets a list of fuzzy matching commands and their scores.
         /// </summary>
-        /// <param name="pattern">command pattern</param>
-        /// <param name="commandOrigin"></param>
-        /// <param name="context"></param>
-        /// <param name="rediscoverImportedModules"></param>
-        /// <param name="moduleVersionRequired"></param>
-        /// <returns></returns>
-        internal static IEnumerable<Tuple<CommandInfo,int>> GetFuzzyMatchingCommands(string pattern, ExecutionContext context, CommandOrigin commandOrigin, bool rediscoverImportedModules = false, bool moduleVersionRequired = false)
+        /// <param name="pattern">Command pattern.</param>
+        /// <param name="context">Execution context.</param>
+        /// <param name="commandOrigin">Command origin.</param>
+        /// <param name="rediscoverImportedModules">If true, rediscovers imported modules.</param>
+        /// <param name="moduleVersionRequired">Specific module version to be required.</param>
+        /// <returns>IEnumerable tuple containing the CommandInfo and the match score.</returns>
+        internal static IEnumerable<Tuple<CommandInfo, int>> GetFuzzyMatchingCommands(string pattern, ExecutionContext context, CommandOrigin commandOrigin, bool rediscoverImportedModules = false, bool moduleVersionRequired = false)
         {
             foreach (CommandInfo command in GetMatchingCommands(pattern, context, commandOrigin, rediscoverImportedModules, moduleVersionRequired, useFuzzyMatching: true))
             {
@@ -401,15 +401,15 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Gets a list of matching commands
+        /// Gets a list of matching commands.
         /// </summary>
-        /// <param name="pattern">command pattern</param>
-        /// <param name="commandOrigin"></param>
-        /// <param name="context"></param>
-        /// <param name="rediscoverImportedModules"></param>
-        /// <param name="moduleVersionRequired"></param>
-        /// <param name="useFuzzyMatching"></param>
-        /// <returns></returns>
+        /// <param name="pattern">Command pattern.</param>
+        /// <param name="context">Execution context.</param>
+        /// <param name="commandOrigin">Command origin.</param>
+        /// <param name="rediscoverImportedModules">If true, rediscovers imported modules.</param>
+        /// <param name="moduleVersionRequired">Specific module version to be required.</param>
+        /// <param name="useFuzzyMatching">Use fuzzy matching.</param>
+        /// <returns>Returns CommandInfo IEnumerable.</returns>
         internal static IEnumerable<CommandInfo> GetMatchingCommands(string pattern, ExecutionContext context, CommandOrigin commandOrigin, bool rediscoverImportedModules = false, bool moduleVersionRequired = false, bool useFuzzyMatching = false)
         {
             // Otherwise, if it had wildcards, just return the "AvailableCommand"
@@ -420,9 +420,7 @@ namespace System.Management.Automation.Internal
             PSModuleAutoLoadingPreference moduleAutoLoadingPreference = CommandDiscovery.GetCommandDiscoveryPreference(context, SpecialVariables.PSModuleAutoLoadingPreferenceVarPath, "PSModuleAutoLoadingPreference");
 
             if ((moduleAutoLoadingPreference != PSModuleAutoLoadingPreference.None) &&
-                    ((commandOrigin == CommandOrigin.Internal) || ((cmdletInfo != null) && (cmdletInfo.Visibility == SessionStateEntryVisibility.Public))
-                    )
-                )
+                ((commandOrigin == CommandOrigin.Internal) || ((cmdletInfo != null) && (cmdletInfo.Visibility == SessionStateEntryVisibility.Public))))
             {
                 foreach (string modulePath in GetDefaultAvailableModuleFiles(isForAutoDiscovery: false, context))
                 {
@@ -496,7 +494,7 @@ namespace System.Management.Automation.Internal
                         tempModuleInfo.SetModuleBase(Utils.DefaultPowerShellAppBase);
                     }
 
-                    //moduleVersionRequired is bypassed by FullyQualifiedModule from calling method. This is the only place where guid will be involved.
+                    // moduleVersionRequired is bypassed by FullyQualifiedModule from calling method. This is the only place where guid will be involved.
                     if (moduleVersionRequired && modulePath.EndsWith(StringLiterals.PowerShellDataFileExtension, StringComparison.OrdinalIgnoreCase))
                     {
                         tempModuleInfo.SetVersion(ModuleIntrinsics.GetManifestModuleVersion(modulePath));
@@ -529,7 +527,7 @@ namespace System.Management.Automation.Internal
                                         moduleCompareName = commandEntry.PSSnapIn.Name;
                                     }
 
-                                    if (String.Equals(moduleShortName, moduleCompareName, StringComparison.OrdinalIgnoreCase))
+                                    if (string.Equals(moduleShortName, moduleCompareName, StringComparison.OrdinalIgnoreCase))
                                     {
                                         if (commandEntry.Visibility == SessionStateEntryVisibility.Private)
                                         {
@@ -548,6 +546,7 @@ namespace System.Management.Automation.Internal
                                         Module = tempModuleInfo
                                     };
                                 }
+
                                 if ((commandTypes & CommandTypes.Cmdlet) == CommandTypes.Cmdlet)
                                 {
                                     yield return new CmdletInfo(commandName, implementingType: null, helpFile: null, PSSnapin: null, context: context)
@@ -555,6 +554,7 @@ namespace System.Management.Automation.Internal
                                         Module = tempModuleInfo
                                     };
                                 }
+
                                 if ((commandTypes & CommandTypes.Function) == CommandTypes.Function)
                                 {
                                     yield return new FunctionInfo(commandName, ScriptBlock.EmptyScriptBlock, context)
@@ -562,6 +562,7 @@ namespace System.Management.Automation.Internal
                                         Module = tempModuleInfo
                                     };
                                 }
+
                                 if ((commandTypes & CommandTypes.Configuration) == CommandTypes.Configuration)
                                 {
                                     yield return new ConfigurationInfo(commandName, ScriptBlock.EmptyScriptBlock, context)
