@@ -69,7 +69,7 @@ namespace System.Management.Automation.Internal
         internal static IEnumerable<string> GetAllAvailableModuleFiles(string topDirectoryToCheck)
         {
             if (!Directory.Exists(topDirectoryToCheck)) { yield break; }
-            
+
             var options = Utils.PathIsUnc(topDirectoryToCheck) ? s_uncPathEnumerationOptions : s_defaultEnumerationOptions;
             Queue<string> directoriesToCheck = new Queue<string>();
             directoriesToCheck.Enqueue(topDirectoryToCheck);
@@ -380,7 +380,7 @@ namespace System.Management.Automation.Internal
         }
 
         /// <summary>
-        /// Gets a list of matching commands
+        /// Gets a list of fuzzy matching commands and their scores
         /// </summary>
         /// <param name="pattern">command pattern</param>
         /// <param name="commandOrigin"></param>
@@ -388,7 +388,29 @@ namespace System.Management.Automation.Internal
         /// <param name="rediscoverImportedModules"></param>
         /// <param name="moduleVersionRequired"></param>
         /// <returns></returns>
-        internal static IEnumerable<CommandInfo> GetMatchingCommands(string pattern, ExecutionContext context, CommandOrigin commandOrigin, bool rediscoverImportedModules = false, bool moduleVersionRequired = false)
+        internal static IEnumerable<Tuple<CommandInfo,int>> GetFuzzyMatchingCommands(string pattern, ExecutionContext context, CommandOrigin commandOrigin, bool rediscoverImportedModules = false, bool moduleVersionRequired = false)
+        {
+            foreach (CommandInfo command in GetMatchingCommands(pattern, context, commandOrigin, rediscoverImportedModules, moduleVersionRequired, useFuzzyMatching: true))
+            {
+                int score = 0;
+                if (FuzzyMatcher.FuzzyMatch(command.Name, pattern, out score))
+                {
+                    yield return Tuple.Create(command, score);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of matching commands
+        /// </summary>
+        /// <param name="pattern">command pattern</param>
+        /// <param name="commandOrigin"></param>
+        /// <param name="context"></param>
+        /// <param name="rediscoverImportedModules"></param>
+        /// <param name="moduleVersionRequired"></param>
+        /// <param name="useFuzzyMatching"></param>
+        /// <returns></returns>
+        internal static IEnumerable<CommandInfo> GetMatchingCommands(string pattern, ExecutionContext context, CommandOrigin commandOrigin, bool rediscoverImportedModules = false, bool moduleVersionRequired = false, bool useFuzzyMatching = false)
         {
             // Otherwise, if it had wildcards, just return the "AvailableCommand"
             // type of command info.
@@ -427,7 +449,8 @@ namespace System.Management.Automation.Internal
 
                             foreach (KeyValuePair<string, CommandInfo> entry in psModule.ExportedCommands)
                             {
-                                if (commandPattern.IsMatch(entry.Value.Name))
+                                if (commandPattern.IsMatch(entry.Value.Name) ||
+                                 (useFuzzyMatching && FuzzyMatcher.FuzzyMatch(entry.Value.Name, pattern)))
                                 {
                                     CommandInfo current = null;
                                     switch (entry.Value.CommandType)
@@ -485,7 +508,8 @@ namespace System.Management.Automation.Internal
                         string commandName = pair.Key;
                         CommandTypes commandTypes = pair.Value;
 
-                        if (commandPattern.IsMatch(commandName))
+                        if (commandPattern.IsMatch(commandName) ||
+                            (useFuzzyMatching && FuzzyMatcher.FuzzyMatch(commandName, pattern)))
                         {
                             bool shouldExportCommand = true;
 

@@ -22,7 +22,8 @@ namespace System.Management.Automation
     {
         Command = 0,
         Error = 1,
-        Dynamic = 2
+        Dynamic = 2,
+        ErrorId = 3
     }
 
     #region Public HostUtilities Class
@@ -57,6 +58,13 @@ namespace System.Management.Automation
             $formatString -f $lastError.TargetObject,"".\$($lastError.TargetObject)""
         ";
 
+        private static string s_getFuzzyMatchedCommands = @"
+            [System.Diagnostics.DebuggerHidden()]
+            param([string] $formatString)
+
+            $formatString -f [string]::Join(', ', (Get-Command $lastError.TargetObject -UseFuzzyMatch | Select-Object -First 10 -ExpandProperty Name))
+        ";
+
         private static ArrayList s_suggestions = new ArrayList(
             new Hashtable[] {
                 NewSuggestion(1, "Transactions", SuggestionMatchType.Command, "^Start-Transaction",
@@ -67,6 +75,11 @@ namespace System.Management.Automation
                     ScriptBlock.CreateDelayParsedScriptBlock(s_checkForCommandInCurrentDirectoryScript, isProductCode: true),
                     ScriptBlock.CreateDelayParsedScriptBlock(s_createCommandExistsInCurrentDirectoryScript, isProductCode: true),
                     new object[] { CodeGeneration.EscapeSingleQuotedStringContent(SuggestionStrings.Suggestion_CommandExistsInCurrentDirectory) },
+                    true),
+                NewSuggestion(4, "General", SuggestionMatchType.ErrorId, "CommandNotFoundException",
+                    ScriptBlock.CreateDelayParsedScriptBlock(s_getFuzzyMatchedCommands, isProductCode: true),
+                    new object[] { CodeGeneration.EscapeSingleQuotedStringContent(SuggestionStrings.Suggestion_CommandNotFound),
+                        },
                     true)
             }
         );
@@ -426,6 +439,13 @@ namespace System.Management.Automation
                             }
                         }
                     }
+                    else if (matchType == SuggestionMatchType.ErrorId)
+                    {
+                        if (lastError != null && lastError is ErrorRecord errorRecord)
+                        {
+                            matchText = errorRecord.FullyQualifiedErrorId;
+                        }
+                    }
                     else
                     {
                         suggestion["Enabled"] = false;
@@ -516,6 +536,24 @@ namespace System.Management.Automation
             result["MatchType"] = matchType;
             result["Rule"] = rule;
             result["Suggestion"] = suggestion;
+            result["Enabled"] = enabled;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Create suggestion with string rule and scriptblock suggestion.
+        /// </summary>
+        private static Hashtable NewSuggestion(int id, string category, SuggestionMatchType matchType, string rule, ScriptBlock suggestion, object[] suggestionArgs, bool enabled)
+        {
+            Hashtable result = new Hashtable(StringComparer.CurrentCultureIgnoreCase);
+
+            result["Id"] = id;
+            result["Category"] = category;
+            result["MatchType"] = matchType;
+            result["Rule"] = rule;
+            result["Suggestion"] = suggestion;
+            result["SuggestionArgs"] = suggestionArgs;
             result["Enabled"] = enabled;
 
             return result;
