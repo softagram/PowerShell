@@ -658,7 +658,7 @@ namespace System.Management.Automation
                     {
                         if (aliasMatcher.IsMatch(aliasEntry.Key) ||
                             (_commandResolutionOptions.HasFlag(SearchResolutionOptions.FuzzyMatch) &&
-                            FuzzyMatcher.FuzzyMatch(aliasEntry.Key, _commandName)))
+                            FuzzyMatcher.IsFuzzyMatch(aliasEntry.Key, _commandName)))
                         {
                             matchingAliases.Add(aliasEntry.Value);
                         }
@@ -737,7 +737,7 @@ namespace System.Management.Automation
                     {
                         if (functionMatcher.IsMatch((string)functionEntry.Key) ||
                             (_commandResolutionOptions.HasFlag(SearchResolutionOptions.FuzzyMatch) &&
-                            FuzzyMatcher.FuzzyMatch(functionEntry.Key.ToString(), _commandName)))
+                            FuzzyMatcher.IsFuzzyMatch(functionEntry.Key.ToString(), _commandName)))
                         {
                             matchingFunction.Add((CommandInfo)functionEntry.Value);
                         }
@@ -966,7 +966,7 @@ namespace System.Management.Automation
                         {
                             if (cmdletMatcher.IsMatch(cmdlet.Name) ||
                                 (_commandResolutionOptions.HasFlag(SearchResolutionOptions.FuzzyMatch) &&
-                                FuzzyMatcher.FuzzyMatch(cmdlet.Name, _commandName)))
+                                FuzzyMatcher.IsFuzzyMatch(cmdlet.Name, _commandName)))
                             {
                                 if (string.IsNullOrEmpty(PSSnapinQualifiedCommandName.PSSnapInName) ||
                                     (PSSnapinQualifiedCommandName.PSSnapInName.Equals(
