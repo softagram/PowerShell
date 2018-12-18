@@ -20,8 +20,11 @@ namespace System.Management.Automation
 {
     internal enum SuggestionMatchType
     {
+        /// <summary>Match on a command.</summary>
         Command = 0,
+        /// <summary>Match based on exception message.</summary>
         Error = 1,
+        /// <summary>Match by running a script block.</summary>
         Dynamic = 2,
 
         /// <summary>Match by fully qualified ErrorId.</summary>
@@ -60,7 +63,7 @@ namespace System.Management.Automation
             $formatString -f $lastError.TargetObject,"".\$($lastError.TargetObject)""
         ";
 
-        private static string _getFuzzyMatchedCommands = @"
+        private static string s_getFuzzyMatchedCommands = @"
             [System.Diagnostics.DebuggerHidden()]
             param([string] $formatString)
 
@@ -83,7 +86,7 @@ namespace System.Management.Automation
                     category: "General",
                     matchType: SuggestionMatchType.ErrorId,
                     rule: "CommandNotFoundException",
-                    suggestion: ScriptBlock.CreateDelayParsedScriptBlock(_getFuzzyMatchedCommands, isProductCode: true),
+                    suggestion: ScriptBlock.CreateDelayParsedScriptBlock(s_getFuzzyMatchedCommands, isProductCode: true),
                     suggestionArgs: new object[] { CodeGeneration.EscapeSingleQuotedStringContent(SuggestionStrings.Suggestion_CommandNotFound) },
                     enabled: true)
             }
