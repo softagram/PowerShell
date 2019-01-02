@@ -292,6 +292,7 @@ namespace System.Management.Automation
             PSSnapIn = providerInfo.PSSnapIn;
             _sessionState = providerInfo._sessionState;
             VolumeSeparatedByColon = providerInfo.VolumeSeparatedByColon;
+            PathSeparator = providerInfo.PathSeparator;
         }
 
         /// <summary>
