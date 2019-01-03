@@ -14,14 +14,14 @@ namespace System.Management.Automation.Internal
         // Default option for local file system enumeration:
         //  - Ignore files/directories when access is denied;
         //  - Search top directory only.
-        private readonly static System.IO.EnumerationOptions s_defaultEnumerationOptions =
+        private static readonly System.IO.EnumerationOptions s_defaultEnumerationOptions =
                                         new System.IO.EnumerationOptions() { AttributesToSkip = 0 };
 
         // Default option for UNC path enumeration. Same as above plus a large buffer size.
         // For network shares, a large buffer may result in better performance as more results can be batched over the wire.
         // The buffer size 16K is recommended in the comment of the 'BufferSize' property:
         //    "A "large" buffer, for example, would be 16K. Typical is 4K."
-        private readonly static System.IO.EnumerationOptions s_uncPathEnumerationOptions =
+        private static readonly System.IO.EnumerationOptions s_uncPathEnumerationOptions =
                                         new System.IO.EnumerationOptions() { AttributesToSkip = 0, BufferSize = 16384 };
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace System.Management.Automation.Internal
                     {
                         analysisProgress = new ProgressRecord(0,
                             Modules.DeterminingAvailableModules,
-                            String.Format(CultureInfo.InvariantCulture, Modules.SearchingUncShare, directory))
+                            string.Format(CultureInfo.InvariantCulture, Modules.SearchingUncShare, directory))
                         {
                             RecordType = ProgressRecordType.Processing
                         };
@@ -323,8 +323,8 @@ namespace System.Management.Automation.Internal
         /// <summary>
         /// Gets the list of versions under the specified module base path in descending sorted order
         /// </summary>
-        /// <param name="moduleBase">module base path</param>
-        /// <returns>sorted list of versions</returns>
+        /// <param name="moduleBase">Module base path.</param>
+        /// <returns>Sorted list of versions.</returns>
         internal static List<Version> GetModuleVersionSubfolders(string moduleBase)
         {
             var versionFolders = new List<Version>();
@@ -349,6 +349,7 @@ namespace System.Management.Automation.Internal
                     versionFolders.Add(version);
                 }
             }
+
             if (versionFolders.Count > 1)
             {
                 versionFolders.Sort((x, y) => y.CompareTo(x));
@@ -364,6 +365,7 @@ namespace System.Management.Automation.Internal
                 folderName = Path.GetFileName(folderName);
                 return Version.TryParse(folderName, out version);
             }
+
             return false;
         }
 
@@ -372,7 +374,7 @@ namespace System.Management.Automation.Internal
 #if UNIX
             return false;
 #else
-            Dbg.Assert(!String.IsNullOrEmpty(path), $"Caller to verify that {nameof(path)} is not null or empty");
+            Dbg.Assert(!string.IsNullOrEmpty(path), $"Caller to verify that {nameof(path)} is not null or empty");
 
             string windowsPowerShellPSHomePath = ModuleIntrinsics.GetWindowsPowerShellPSHomeModulePath();
             return path.StartsWith(windowsPowerShellPSHomePath, StringComparison.OrdinalIgnoreCase);

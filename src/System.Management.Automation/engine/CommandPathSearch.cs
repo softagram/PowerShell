@@ -14,7 +14,7 @@ namespace System.Management.Automation
     /// Used to enumerate the commands on the system that match the specified
     /// command name
     /// </summary>
-    internal class CommandPathSearch : IEnumerable<String>, IEnumerator<String>
+    internal class CommandPathSearch : IEnumerable<string>, IEnumerator<string>
     {
         [TraceSource("CommandSearch", "CommandSearch")]
         private static PSTraceSource s_tracer = PSTraceSource.GetTracer("CommandSearch", "CommandSearch");
@@ -152,7 +152,7 @@ namespace System.Management.Automation
 
                     // Note, if the directory resolves to multiple paths, only the first is used.
 
-                    if (!String.IsNullOrEmpty(resolvedPath))
+                    if (!string.IsNullOrEmpty(resolvedPath))
                     {
                         CommandDiscovery.discoveryTracer.TraceError(
                             "The relative path resolved to: {0}",
